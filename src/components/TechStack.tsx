@@ -185,8 +185,13 @@ const TechStack = () => {
           files={`${baseUrl}models/char_enviorment.hdr`}
           environmentIntensity={0.5}
         />
-        <EffectComposer disableNormalPass>
-          <N8AO color="#0f002c" aoRadius={2} intensity={1.15} />
+        <EffectComposer>
+          <N8AO
+            color="#0f002c"
+            aoRadius={2}
+            intensity={1.15}
+            halfRes
+          />
         </EffectComposer>
       </Canvas>
     </div>
