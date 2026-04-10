@@ -8,9 +8,13 @@ import { TbNotes } from "react-icons/tb";
 import { useEffect } from "react";
 import HoverLinks from "./HoverLinks";
 
+// 1. Get the base URL from Vite
+const baseUrl = import.meta.env.BASE_URL;
+
 const SocialIcons = () => {
   useEffect(() => {
     const social = document.getElementById("social") as HTMLElement;
+    if (!social) return; // Guard clause
 
     social.querySelectorAll("span").forEach((item) => {
       const elem = item as HTMLElement;
@@ -49,8 +53,10 @@ const SocialIcons = () => {
 
       updatePosition();
 
+      // Note: your original code had a small bug in cleanup 
+      // (adding to document but removing from elem). Fixed below.
       return () => {
-        elem.removeEventListener("mousemove", onMouseMove);
+        document.removeEventListener("mousemove", onMouseMove);
       };
     });
   }, []);
@@ -59,45 +65,26 @@ const SocialIcons = () => {
     <div className="icons-section">
       <div className="social-icons" data-cursor="icons" id="social">
         <span>
-          <a
-            href="https://github.com/mohdamaansiddiqui"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href="https://github.com/mohdamaansiddiqui" target="_blank" rel="noreferrer">
             <FaGithub />
           </a>
         </span>
         <span>
-          <a
-            href="https://www.linkedin.com/in/mohd-amaan-siddiqui-678a4a203/"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href="https://www.linkedin.com/in/mohd-amaan-siddiqui-678a4a203/" target="_blank" rel="noreferrer">
             <FaLinkedinIn />
           </a>
         </span>
-        {/* <span>
-          <a
-            href="https://www.youtube.com/@Leftbraincoder"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <FaYoutube />
-          </a>
-        </span> */}
         <span>
-          <a
-            href="https://www.instagram.com/itsamaansid?igsh=NGFwaWptZzBicmZs&utm_source=qr"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href="https://www.instagram.com/itsamaansid?igsh=NGFwaWptZzBicmZs&utm_source=qr" target="_blank" rel="noreferrer">
             <FaInstagram />
           </a>
         </span>
       </div>
+      
+      {/* 2. FIXED RESUME LINK: Prepended with baseUrl and checked filename */}
       <a
         className="resume-button"
-        href="/Amaan_siddiqui.pdf"
+        href={`${baseUrl}Amaan_siddiqui.pdf`} 
         target="_blank"
         rel="noreferrer"
       >
