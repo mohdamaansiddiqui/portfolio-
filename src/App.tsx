@@ -7,18 +7,16 @@ import { LoadingProvider } from "./context/LoadingProvider";
 
 const App = () => {
   return (
-    <>
-      <LoadingProvider>
-        <Suspense>
-          <MainContainer>
-            <Suspense>
-              <CharacterModel />
-            </Suspense>
-          </MainContainer>
-        </Suspense>
-      </LoadingProvider>
-    </>
+    <LoadingProvider>
+      {/* Add a fallback here, even a simple div, to see if it triggers */}
+      <Suspense fallback={<div style={{color: 'white'}}>Loading Bundle...</div>}>
+        <MainContainer>
+          <Suspense fallback={null}>
+            <CharacterModel />
+          </Suspense>
+        </MainContainer>
+      </Suspense>
+    </LoadingProvider>
   );
 };
-
 export default App;
