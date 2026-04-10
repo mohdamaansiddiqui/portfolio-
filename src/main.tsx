@@ -1,14 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom"; // Essential for routing
-import App from "./App.jsx";
+import { BrowserRouter } from "react-router-dom";
+import App from "./App";
 import "./index.css";
 
-createRoot(document.getElementById("root")).render(
+// The '!' tells TypeScript that we are certain the #root element exists.
+const container = document.getElementById("root")!;
+const root = createRoot(container);
+
+root.render(
   <StrictMode>
-    {/* The basename is the key. Since your repo is 'portfolio-', 
-      all routing needs to start from that path.
-    */}
     <BrowserRouter basename="/portfolio-/">
       <App />
     </BrowserRouter>
