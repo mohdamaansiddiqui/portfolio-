@@ -3,33 +3,37 @@ import "./styles/Work.css";
 import WorkImage from "./WorkImage";
 import { MdArrowBack, MdArrowForward } from "react-icons/md";
 
+// 1. Get the base URL from Vite environment
+const baseUrl = import.meta.env.BASE_URL;
+
 const projects = [
   {
     title: "Ridd.in CRM",
     category: "Recruitment Application",
     tools: "Frontend Development, SAS-Based CRM, Workflow Automation",
-    image: "/images/crm.png",
+    // 2. Prefix image paths with baseUrl
+    image: `${baseUrl}images/crm.png`,
     link: "https://app.ridd.in/auth/login",
   },
   {
     title: "Ai.SE",
     category: "Voice AI Calling Platform",
     tools: "Voice AI, Calling Automation, Customer Engagement",
-    image: "/images/Ai.se.png",
+    image: `${baseUrl}images/Ai.se.png`,
     link: "https://mohdamaansiddiqui.github.io/ai-se-landing/",
   },
   {
     title: "MeatAmingo",
     category: "Food Delivery Platform",
     tools: "Food Delivery, User Experience, Mobile Optimization",
-    image: "/images/Amigo.png",
+    image: `${baseUrl}images/Amigo.png`,
     link: "https://meatamingo.com",
   },
   {
     title: "KidsLand",
     category: "Kids Carnival Website",
     tools: "Frontend Development, Interactive Design, Responsive Layout",
-    image: "/images/Kids.png",
+    image: `${baseUrl}images/Kids.png`,
     link: "https://kidsland.live/",
   },
 ];
@@ -113,6 +117,7 @@ const Work = () => {
                       </div>
                     </div>
                     <div className="carousel-image-wrapper">
+                      {/* 3. The images will now correctly load from /portfolio-/images/... */}
                       <WorkImage
                         image={project.image}
                         alt={project.title}

@@ -1,54 +1,50 @@
 import { useEffect, useState } from "react";
 import "./styles/Loading.css";
 import { useLoading } from "../context/LoadingProvider";
-
 import Marquee from "react-fast-marquee";
 
 const Loading = ({ percent }: { percent: number }) => {
   const { setIsLoading } = useLoading();
-  const [loaded, setLoaded] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isDone, setIsDone] = useState(false);
   const [clicked, setClicked] = useState(false);
 
-  if (percent >= 100) {
-    setTimeout(() => {
-      setLoaded(true);
-      setTimeout(() => {
-        setIsLoaded(true);
-      }, 1000);
-    }, 600);
-  }
-
+  // Trigger state change when loading hits 100%
   useEffect(() => {
-    import("./utils/initialFX").then((module) => {
-      if (isLoaded) {
-        setClicked(true);
+    if (percent >= 100 && !isDone) {
+      const timer = setTimeout(() => setIsDone(true), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [percent, isDone]);
+
+  // Handle transition out and initial animations
+  useEffect(() => {
+    if (isDone) {
+      setClicked(true);
+      const triggerExit = async () => {
+        const module = await import("./utils/initialFX");
         setTimeout(() => {
           if (module.initialFX) {
             module.initialFX();
           }
-          setIsLoading(false);
-        }, 900);
-      }
-    });
-  }, [isLoaded]);
+          setIsLoading(false); 
+        }, 800); 
+      };
+      triggerExit();
+    }
+  }, [isDone, setIsLoading]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLElement>) {
-    const { currentTarget: target } = e;
+    const target = e.currentTarget;
     const rect = target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    target.style.setProperty("--mouse-x", `${x}px`);
-    target.style.setProperty("--mouse-y", `${y}px`);
+    target.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
+    target.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
   }
 
   return (
     <>
       <div className="loading-header">
-        <a href="/#" className="loader-title" data-cursor="disable">
-          AM
-        </a>
-        <div className={`loaderGame ${clicked && "loader-out"}`}>
+        <a href="/#" className="loader-title" data-cursor="disable">AM</a>
+        <div className={`loaderGame ${clicked ? "loader-out" : ""}`}>
           <div className="loaderGame-container">
             <div className="loaderGame-in">
               {[...Array(27)].map((_, index) => (
@@ -59,6 +55,7 @@ const Loading = ({ percent }: { percent: number }) => {
           </div>
         </div>
       </div>
+      
       <div className="loading-screen">
         <div className="loading-marquee">
           <Marquee>
@@ -67,11 +64,11 @@ const Loading = ({ percent }: { percent: number }) => {
           </Marquee>
         </div>
         <div
-          className={`loading-wrap ${clicked && "loading-clicked"}`}
-          onMouseMove={(e) => handleMouseMove(e)}
+          className={`loading-wrap ${clicked ? "loading-clicked" : ""}`}
+          onMouseMove={handleMouseMove}
         >
           <div className="loading-hover"></div>
-          <div className={`loading-button ${loaded && "loading-complete"}`}>
+          <div className={`loading-button ${isDone ? "loading-complete" : ""}`}>
             <div className="loading-container">
               <div className="loading-content">
                 <div className="loading-content-in">
@@ -92,6 +89,10 @@ const Loading = ({ percent }: { percent: number }) => {
 
 export default Loading;
 
+/**
+ * EXPORTED HELPER: setProgress
+ * This is what Scene.tsx is looking for.
+ */
 export const setProgress = (setLoading: (value: number) => void) => {
   let percent: number = 0;
 
@@ -131,5 +132,6 @@ export const setProgress = (setLoading: (value: number) => void) => {
       }, 2);
     });
   }
+  
   return { loaded, percent, clear };
 };

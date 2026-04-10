@@ -11,21 +11,25 @@ import {
   RapierRigidBody,
 } from "@react-three/rapier";
 
-const textureLoader = new THREE.TextureLoader();
-const imageUrls = [
-  "/images/react2.webp",
-  "/images/node2.webp",
-  "/images/express.webp",
-  "/images/mysql.webp",
-  "/images/typescript.webp",
-  "/images/javascript.webp",
-  "/images/python.png",
-  "/images/bootstrap.png",
-  "/images/mui.png",
-   "/images/matplot.png",
-];
-const textures = imageUrls.map((url) => textureLoader.load(url));
+// Get the base URL (e.g., /portfolio-/) to prevent 404s on GitHub Pages
+const baseUrl = import.meta.env.BASE_URL;
 
+const textureLoader = new THREE.TextureLoader();
+
+const imageUrls = [
+  `${baseUrl}images/react2.webp`,
+  `${baseUrl}images/node2.webp`,
+  `${baseUrl}images/express.webp`,
+  `${baseUrl}images/mysql.webp`,
+  `${baseUrl}images/typescript.webp`,
+  `${baseUrl}images/javascript.webp`,
+  `${baseUrl}images/python.png`,
+  `${baseUrl}images/bootstrap.png`,
+  `${baseUrl}images/mui.png`,
+  `${baseUrl}images/matplot.png`,
+];
+
+const textures = imageUrls.map((url) => textureLoader.load(url));
 const sphereGeometry = new THREE.SphereGeometry(1, 28, 28);
 
 const spheres = [...Array(30)].map(() => ({
@@ -50,10 +54,10 @@ function SphereGeo({
   const api = useRef<RapierRigidBody | null>(null);
 
   useFrame((_state, delta) => {
-    if (!isActive) return;
+    if (!isActive || !api.current) return;
     delta = Math.min(0.1, delta);
     const impulse = vec
-      .copy(api.current!.translation())
+      .copy(api.current.translation() as THREE.Vector3)
       .normalize()
       .multiply(
         new THREE.Vector3(
@@ -63,7 +67,7 @@ function SphereGeo({
         )
       );
 
-    api.current?.applyImpulse(impulse, true);
+    api.current.applyImpulse(impulse, true);
   });
 
   return (
@@ -93,12 +97,7 @@ function SphereGeo({
   );
 }
 
-type PointerProps = {
-  vec?: THREE.Vector3;
-  isActive: boolean;
-};
-
-function Pointer({ vec = new THREE.Vector3(), isActive }: PointerProps) {
+function Pointer({ vec = new THREE.Vector3(), isActive }: { vec?: THREE.Vector3; isActive: boolean }) {
   const ref = useRef<RapierRigidBody>(null);
 
   useFrame(({ pointer, viewport }) => {
@@ -131,28 +130,17 @@ const TechStack = () => {
 
   useEffect(() => {
     const handleScroll = () => {
+      const workElem = document.getElementById("work");
+      if (!workElem) return;
       const scrollY = window.scrollY || document.documentElement.scrollTop;
-      const threshold = document
-        .getElementById("work")!
-        .getBoundingClientRect().top;
+      const threshold = workElem.getBoundingClientRect().top + scrollY - 500;
       setIsActive(scrollY > threshold);
     };
-    document.querySelectorAll(".header a").forEach((elem) => {
-      const element = elem as HTMLAnchorElement;
-      element.addEventListener("click", () => {
-        const interval = setInterval(() => {
-          handleScroll();
-        }, 10);
-        setTimeout(() => {
-          clearInterval(interval);
-        }, 1000);
-      });
-    });
+
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
   const materials = useMemo(() => {
     return textures.map(
       (texture) =>
@@ -180,15 +168,7 @@ const TechStack = () => {
         className="tech-canvas"
       >
         <ambientLight intensity={1} />
-        <spotLight
-          position={[20, 20, 25]}
-          penumbra={1}
-          angle={0.2}
-          color="white"
-          castShadow
-          shadow-mapSize={[512, 512]}
-        />
-        <directionalLight position={[0, 5, -4]} intensity={2} />
+        <spotLight position={[20, 20, 25]} penumbra={1} angle={0.2} castShadow />
         <Physics gravity={[0, 0, 0]}>
           <Pointer isActive={isActive} />
           {spheres.map((props, i) => (
@@ -200,12 +180,12 @@ const TechStack = () => {
             />
           ))}
         </Physics>
+        {/* Fix: Use relative path for Environment HDR */}
         <Environment
-          files="/models/char_enviorment.hdr"
+          files={`${baseUrl}models/char_enviorment.hdr`}
           environmentIntensity={0.5}
-          environmentRotation={[0, 4, 2]}
         />
-        <EffectComposer enableNormalPass={false}>
+        <EffectComposer disableNormalPass>
           <N8AO color="#0f002c" aoRadius={2} intensity={1.15} />
         </EffectComposer>
       </Canvas>

@@ -3,6 +3,9 @@ import { DRACOLoader, GLTF, GLTFLoader } from "three-stdlib";
 import { setCharTimeline, setAllTimeline } from "../../utils/GsapScroll";
 import { decryptFile } from "./decrypt";
 
+// 1. Get the base URL for GitHub Pages
+const baseUrl = import.meta.env.BASE_URL;
+
 const setCharacter = (
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
@@ -10,14 +13,18 @@ const setCharacter = (
 ) => {
   const loader = new GLTFLoader();
   const dracoLoader = new DRACOLoader();
-  dracoLoader.setDecoderPath("/draco/");
+  
+  // 2. Fix Draco Decoder Path
+  dracoLoader.setDecoderPath(`${baseUrl}draco/`);
   loader.setDRACOLoader(dracoLoader);
 
   const loadCharacter = () => {
     return new Promise<GLTF | null>(async (resolve, reject) => {
       try {
+        // 3. Fix Encrypted Model Path
+        // This stops the 404 and the "OperationError" in decrypt.ts
         const encryptedBlob = await decryptFile(
-          "/models/character.enc?v=2",
+          `${baseUrl}models/character.enc?v=2`,
           "MyCharacter12"
         );
         const blobUrl = URL.createObjectURL(new Blob([encryptedBlob]));
@@ -32,9 +39,8 @@ const setCharacter = (
               if (child.isMesh) {
                 const mesh = child as THREE.Mesh;
 
-                // Change clothing colors to match site theme
                 if (mesh.material) {
-                  if (mesh.name === "BODY.SHIRT") { // The shirt mesh
+                  if (mesh.name === "BODY.SHIRT") {
                     const newMat = (mesh.material as THREE.Material).clone() as THREE.MeshStandardMaterial;
                     newMat.color = new THREE.Color("#8B4513");
                     mesh.material = newMat;
@@ -53,10 +59,12 @@ const setCharacter = (
             resolve(gltf);
             setCharTimeline(character, camera);
             setAllTimeline();
-            character!.getObjectByName("footR")!.position.y = 3.36;
-            character!.getObjectByName("footL")!.position.y = 3.36;
-
-            // Monitor scale is handled by GsapScroll.ts animations
+            
+            // Null-safety check for foot positioning
+            const footR = character!.getObjectByName("footR");
+            const footL = character!.getObjectByName("footL");
+            if(footR) footR.position.y = 3.36;
+            if(footL) footL.position.y = 3.36;
 
             dracoLoader.dispose();
           },
@@ -68,7 +76,7 @@ const setCharacter = (
         );
       } catch (err) {
         reject(err);
-        console.error(err);
+        console.error("Decryption or Fetch failed:", err);
       }
     });
   };

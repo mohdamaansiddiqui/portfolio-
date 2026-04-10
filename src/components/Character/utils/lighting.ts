@@ -2,6 +2,9 @@ import * as THREE from "three";
 import { RGBELoader } from "three-stdlib";
 import { gsap } from "gsap";
 
+// 1. Get the base URL for the portfolio- subfolder
+const baseUrl = import.meta.env.BASE_URL;
+
 const setLighting = (scene: THREE.Scene) => {
   const directionalLight = new THREE.DirectionalLight(0x5eead4, 0);
   directionalLight.intensity = 0;
@@ -18,8 +21,9 @@ const setLighting = (scene: THREE.Scene) => {
   pointLight.castShadow = true;
   scene.add(pointLight);
 
+  // 2. Fix the path to use baseUrl so it finds the HDR file
   new RGBELoader()
-    .setPath("/models/")
+    .setPath(`${baseUrl}models/`) 
     .load("char_enviorment.hdr?v=2", function (texture) {
       texture.mapping = THREE.EquirectangularReflectionMapping;
       scene.environment = texture;
@@ -34,19 +38,24 @@ const setLighting = (scene: THREE.Scene) => {
       pointLight.intensity = 0;
     }
   }
+
   const duration = 2;
   const ease = "power2.inOut";
+  
   function turnOnLights() {
+    // 3. Ensure this value is high enough to light the character's face
     gsap.to(scene, {
-      environmentIntensity: 0.64,
+      environmentIntensity: 1.2, // Increased from 0.64 for better visibility
       duration: duration,
       ease: ease,
     });
+    
     gsap.to(directionalLight, {
-      intensity: 1,
+      intensity: 1.5, // Slightly increased to act as a key light
       duration: duration,
       ease: ease,
     });
+    
     gsap.to(".character-rim", {
       y: "55%",
       opacity: 1,
